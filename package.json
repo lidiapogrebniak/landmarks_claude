@@ -1,0 +1,29 @@
+{
+  "name": "landmarks_claude",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "serve": "live-server dist",
+    "dev": "concurrently npm:watch npm:serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lidiapogrebniak/landmarks_claude.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lidiapogrebniak/landmarks_claude/issues"
+  },
+  "homepage": "https://github.com/lidiapogrebniak/landmarks_claude#readme",
+  "description": "",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "typescript": "^7.0.2",
+    "concurrently": "^9.0.0"
+  }
+}
