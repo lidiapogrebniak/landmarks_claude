@@ -1,4 +1,4 @@
-const response = await fetch("./wordBank.json");
+const response = await fetch("./data/wordBank.json");
 const words = await response.json();
 
 console.log(words);
