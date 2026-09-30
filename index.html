@@ -5,6 +5,14 @@
     <title>Hex Field Generator</title>
   </head>
   <body>
+    <div>
+      <label><input type="radio" name="config" value="beginner" checked /> Beginner</label>
+      <label><input type="radio" name="config" value="pro" /> Pro</label>
+    </div>
+    <button id="generate" type="button" disabled>Generate</button>
+    <div id="map"></div>
+    <p id="words"></p>
+    <p id="error" style="color: #b00020"></p>
     <script type="module" src="./dist/index.js"></script>
   </body>
 </html>
