@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "A: Chrome",
+      "type": "chrome", // старое имя "pwa-chrome" тоже работает
+      "request": "launch",
+      "url": "http://localhost:8082",
+      "webRoot": "${workspaceFolder}", // папка, которую раздаёт live-server
+      "preLaunchTask": "dev"
+    }
+  ]
+}

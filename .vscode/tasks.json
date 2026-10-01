@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "tsc: watch",
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "option": "watch",
+      "isBackground": true,
+      // встроенный matcher: знает, когда tsc закончил компиляцию
+      "problemMatcher": ["$tsc-watch"]
+    },
+    {
+      "label": "live-server",
+      "type": "shell",
+      // --no-browser: браузер откроет отладчик, а не live-server
+      "command": "npx live-server --port=8082 --no-browser",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "live-server",
+        "pattern": { "regexp": "^__never_matches__$" }, // ошибки не ищем
+        "background": {
+          "activeBegins": true,
+          "beginsPattern": ".",
+          "endsPattern": "Serving \"" // live-server пишет: Serving "..." at http://...
+        }
+      }
+    },
+    {
+      "label": "dev",
+      "dependsOn": ["tsc: watch", "live-server"] // запускаются параллельно
+    }
+  ]
+}
