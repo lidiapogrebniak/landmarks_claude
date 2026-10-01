@@ -31,13 +31,21 @@ Rules:
 
 ## Code structure
 
-There is no limit on the number of files. Split the code the way that makes it simplest to read and understand: each file and function has one clear responsibility, names say what things do, and no function does several unrelated things. Prefer small, plain functions over clever abstractions. The types and function names in this spec are examples; choose the file split and API shape yourself.
+## Code structure
+
+Optimize for a human reader, not for performance. The code should be easy to read, easy to understand and pleasant to change. You may sacrifice performance and efficiency significantly for that: recomputing things, extra objects, extra passes over the field are all fine.
+
+- Use OOP where it makes the domain clearer: model the main concepts as classes with clear responsibilities (for example the field, a cell, a location, the placement stages, the map renderer).
+- Introduce abstractions where they make the code simpler to follow, for example a common interface for placement stages or for weight rules. Do not add abstractions that have only one trivial use and add no clarity.
+- Each class, file and method has one clear responsibility. Names say what things do; no abbreviations.
+- There is no limit on the number of files. Aim for an architecture that is simple, consistent and easy to explain in a few sentences.
+- The types and function names in this spec are examples; choose the class design and file split yourself.
 
 ## Part 1. Generator
 
 ### Input
 
-- `radius`: integer, default `4`.
+- `radius`: integer, default `3`.
 - `config`: `"beginner"` or `"pro"`.
 - `words`: list of words loaded from `wordBank.json` (the generator receives them as a parameter; it does not read files itself).
 
@@ -74,7 +82,7 @@ Adjust names to the project's conventions if needed, but keep the idea: every ce
 
 - Flat-top hexagon, axial coordinates `q`, `r`.
 - A cell belongs to the field when `max(|q|, |r|, |q + r|) <= radius`.
-- Cell count is `1 + 3 * radius * (radius + 1)`; for radius 4 that is 61.
+- Cell count is `1 + 3 * radius * (radius + 1)`; for radius 3 that is 37.
 - Neighbors of `(q, r)`: `(q+1, r)`, `(q-1, r)`, `(q, r+1)`, `(q, r-1)`, `(q+1, r-1)`, `(q-1, r+1)`.
 
 ### Location counts
@@ -115,7 +123,25 @@ Bad: CURSE, TRAP.
 
 Placement goes in three stages, strictly in this order: WORD cells, then the other good locations, then bad locations. Locations are placed one at a time. Occupied cells can never be chosen.
 
-Use `Math.random` directly for all randomness. Do not add an RNG parameter or a seeded generator.
+All randomness comes from one seeded generator module (mulberry32). Never call `Math.random` anywhere in the generator: every random choice (stage 1, `pickWeighted`, word selection) uses this `random()`:
+
+```ts
+let seed = 0;
+
+export function setSeed(value: number): void {
+  seed = value | 0;
+}
+
+/** Seeded pseudo-random number in [0, 1) (mulberry32). */
+export default function random(): number {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), seed | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+```
+
+The viewer calls `setSeed(SEED)` once on page load, before the first generation. Subsequent generations continue the same sequence, so each click gives a new map, and the whole sequence of maps repeats after a page reload.
 
 **Stage 1. WORD cells**
 
@@ -156,12 +182,20 @@ Keep these together in one place, next to the location counts, so they are easy 
 | ----------------------- | ------- | ----------------------------------------------------------------------------------------------- |
 | `GOOD_NEIGHBOR_PENALTY` | `0.2`   | Weight removed from a free cell for each neighboring good location                              |
 | `DISTANCE_DECAY_FACTOR` | `2`     | How fast the chance of a bad location falls with distance from the center; larger means flatter |
+| `SEED`                  | `12345` | Seed for the random generator, set before each map generation                                   |
 
 Implement weighted choice as one reusable helper (e.g. `pickWeighted(cells, weightFn)`) used by stages 2 and 3.
 
 ### Words
 
-- Pick exactly 3 different words at random from `words`.
+- Pick 3 different words using this function
+  export function getRandomWords(
+  count: number,
+  words: readonly string[],
+  ): string[] {
+  const shuffledWords = [...words].sort(() => 0.5 - random());
+  return shuffledWords.slice(0, count);
+  }
 - Never hardcode words in the code.
 - The order of the 3 words is the display order `{WORD_A}-{WORD_B}-{WORD_C}`.
 - Words map to WORD cells by that order: the first word goes to cell A, the second to cell B, the third to cell C (see Stage 1).
@@ -186,7 +220,7 @@ Throw clear, specific errors (say what is wrong and what value was received) whe
 3. The SVG with the generated map.
 4. Below the SVG, the three words in full: `{WORD_A}-{WORD_B}-{WORD_C}`.
 
-On page load, generate a beginner map once so the page is not empty. Each press of Generate produces a new map with the selected configuration. The radius is not exposed in the UI; the viewer uses the default (4).
+On page load, generate a beginner map once so the page is not empty. Each press of Generate produces a new map with the selected configuration. The radius is not exposed in the UI; the viewer uses the default (3).
 
 ### Rendering
 
@@ -209,11 +243,12 @@ On page load, generate a beginner map once so the page is not empty. Each press 
 
 Do not add test files or a test framework to the project. Instead, verify the generator yourself before reporting:
 
-- Write a throwaway check script outside the project (or delete it afterwards), run the generator at least 100 times for each configuration, and check on every run:
+- Write a throwaway check script outside the project (or delete it afterwards), run the generator at least 100 times (you can use random seed during this step) for each configuration, and check on every run:
   - total cell count is 1 + 3R(R+1);
   - every cell satisfies the field condition, no duplicate coordinates;
   - exact count of each location type;
   - 3 different WORD words, and the WORD cells are connected;
+- Run the generator twice with the same seed and confirm the two maps are identical.
 - Call the generator once for each validation case and confirm it throws the expected error.
 - If any check fails, fix the generator and run the checks again. Do not report the task as done while a check fails.
 - Make sure no check files are left in the project.
