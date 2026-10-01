@@ -1,7 +1,13 @@
 import { getCellId, getFieldCells } from "./hexGrid.js";
-import { placeBadLocations, placeGoodLocations, placeWords, pickWordCells, type Placements } from "./placement.js";
-import { pickDistinct } from "./random.js";
-import { DEFAULT_RADIUS, WORD_COUNT } from "./settings.js";
+import {
+  placeBadLocations,
+  placeGoodLocations,
+  placeWords,
+  pickWordCells,
+  type Placements,
+} from "./placement.js";
+import { getRandomWords, pickDistinct, setSeed } from "./random.js";
+import { DEFAULT_RADIUS, RANDOM_SEED, WORD_COUNT } from "./settings.js";
 import type { Cell, HexCoord, IslandConfig, IslandMap } from "./types.js";
 import {
   validateConfig,
@@ -16,6 +22,7 @@ export function generateIslandMap(
   words: readonly string[],
   radius: number = DEFAULT_RADIUS,
 ): IslandMap {
+  setSeed(RANDOM_SEED);
   validateRadius(radius);
   validateConfig(config);
   validateFieldSize(radius, config);
@@ -35,14 +42,20 @@ export function generateIslandMap(
 }
 
 function selectWords(words: readonly string[]): [string, string, string] {
-  const uniqueWords = [...new Set(words)];
-  validateUniqueWordCount(uniqueWords);
-  const [first, second, third] = pickDistinct(uniqueWords, WORD_COUNT) as [string, string, string];
+  validateUniqueWordCount(words);
+  const [first, second, third] = getRandomWords(WORD_COUNT, words) as [
+    string,
+    string,
+    string,
+  ];
   [first, second, third].forEach(validateSelectedWord);
   return [first, second, third];
 }
 
-function buildCells(fieldCells: readonly HexCoord[], placements: Placements): Cell[] {
+function buildCells(
+  fieldCells: readonly HexCoord[],
+  placements: Placements,
+): Cell[] {
   return fieldCells.map((cell) => ({
     q: cell.q,
     r: cell.r,

@@ -3,7 +3,7 @@ import type { Cell, IslandMap, LocationType } from "../generator/types.js";
 const SVG_NS = "http://www.w3.org/2000/svg";
 const HEX_SIZE = 40;
 const PADDING = 10;
-const IMAGE_SIZE = HEX_SIZE * 1.2;
+const IMAGE_SIZE = HEX_SIZE * 1.7;
 
 const LOCATION_IMAGES: Record<Exclude<LocationType, "WORD">, string> = {
   WATER: "./images/water.png",
@@ -22,7 +22,10 @@ interface Point {
 export function renderMap(map: IslandMap): SVGSVGElement {
   const svg = createSvgElement("svg");
   const extent = getFieldExtent(map.radius);
-  svg.setAttribute("viewBox", `${-extent.x} ${-extent.y} ${extent.x * 2} ${extent.y * 2}`);
+  svg.setAttribute(
+    "viewBox",
+    `${-extent.x} ${-extent.y} ${extent.x * 2} ${extent.y * 2}`,
+  );
   svg.setAttribute("width", String(extent.x * 2));
   svg.setAttribute("height", String(extent.y * 2));
 
@@ -96,6 +99,8 @@ function renderLocationImage(center: Point, href: string): SVGImageElement {
   return image;
 }
 
-function createSvgElement<K extends keyof SVGElementTagNameMap>(tag: K): SVGElementTagNameMap[K] {
+function createSvgElement<K extends keyof SVGElementTagNameMap>(
+  tag: K,
+): SVGElementTagNameMap[K] {
   return document.createElementNS(SVG_NS, tag);
 }
