@@ -31,8 +31,6 @@ Rules:
 
 ## Code structure
 
-## Code structure
-
 Optimize for a human reader, not for performance. The code should be easy to read, easy to understand and pleasant to change. You may sacrifice performance and efficiency significantly for that: recomputing things, extra objects, extra passes over the field are all fine.
 
 - Use OOP where it makes the domain clearer: model the main concepts as classes with clear responsibilities (for example the field, a cell, a location, the placement stages, the map renderer).
@@ -51,7 +49,7 @@ Optimize for a human reader, not for performance. The code should be easy to rea
 
 ### Output
 
-A plain data object, for example:
+A data object, for example (a plain object is not mandatory; class instances are fine):
 
 ```ts
 type LocationType =
@@ -76,7 +74,7 @@ interface IslandMap {
 }
 ```
 
-Adjust names to the project's conventions if needed, but keep the idea: every cell of the field is present, empty cells have `location: null`.
+Adjust names and shape to the project's conventions if needed, but keep the idea: every cell of the field is present, empty cells have no location.
 
 ### Field
 
@@ -141,7 +139,7 @@ export default function random(): number {
 }
 ```
 
-The viewer calls `setSeed(SEED)` once on page load, before the first generation. Subsequent generations continue the same sequence, so each click gives a new map, and the whole sequence of maps repeats after a page reload.
+The seed is static for testing: `setSeed` is called before each map generation, so the same seed always gives the same map (with the default `SEED`, every press of Generate shows the same map for a given configuration). The generator accepts an optional seed (default `SEED`) and calls `setSeed` with it at the start of every generation.
 
 **Stage 1. WORD cells**
 
